@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'cursor/**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: logistics
+          POSTGRES_PASSWORD: logistics_dev
+          POSTGRES_DB: logistics
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://logistics:logistics_dev@localhost:5432/logistics?schema=public
+      JWT_SECRET: ci-test-secret-key-minimum-32-chars
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build shared package
+        run: npm run build --workspace=@logistics/shared
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate --workspace=@logistics/api
+
+      - name: Run migrations
+        run: cd apps/api && npx prisma migrate deploy
+
+      - name: Lint shared
+        run: npm run lint --workspace=@logistics/shared
+
+      - name: Build API
+        run: npm run api:build
+
+      - name: Test API
+        run: npm run api:test
+
+      - name: Lint mobile
+        run: npm run lint --workspace=@logistics/mobile
