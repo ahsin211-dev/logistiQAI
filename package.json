@@ -1,0 +1,27 @@
+{
+  "name": "logistics-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "api:dev": "npm run dev --workspace=@logistics/api",
+    "api:build": "npm run build --workspace=@logistics/api",
+    "api:test": "npm run test --workspace=@logistics/api",
+    "mobile:start": "npm run start --workspace=@logistics/mobile",
+    "mobile:ios": "npm run ios --workspace=@logistics/mobile",
+    "mobile:android": "npm run android --workspace=@logistics/mobile",
+    "db:generate": "npm run prisma:generate --workspace=@logistics/api",
+    "db:migrate": "npm run prisma:migrate --workspace=@logistics/api",
+    "db:seed": "npm run prisma:seed --workspace=@logistics/api",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "lint": "npm run lint --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
